@@ -1,0 +1,6 @@
+api_url = "https://libretime-vm/api"
+stream_url = "http://icecast2.server.com/mystation"
+output_dir = "/home/scott/recordings"
+output_file_format = "mp3"
+recording_temp_dir = "/home/scott/ShowRecorder/recording_temp"
+blocklist_show_names = ["ROTATION"]
