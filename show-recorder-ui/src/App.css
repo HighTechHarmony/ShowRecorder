@@ -1,0 +1,80 @@
+.App {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.file-table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 80%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.file-table th,
+.file-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+/* Prevent wrapping for specific columns */
+.file-table th#start_time,
+.file-table td#start_time,
+.file-table th#end_time,
+.file-table td#end_time,
+.file-table th#start_date,
+.file-table td#start_date,
+.file-table th#end_date,
+.file-table td#end_date {
+  white-space: nowrap;
+  width: 150px; /* Adjust width as needed */
+}
+
+.file-table th {
+  background-color: #f4f4f4;
+  cursor: pointer;
+  text-align: left;
+}
+
+.file-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.file-table tr:hover {
+  background-color: #f1f1f1;
+}

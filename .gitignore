@@ -1,5 +1,7 @@
 *.liq
 recording_temp/
+recordings/
 *.conf
 *.log
+*.service
 
