@@ -243,13 +243,17 @@ function App() {
       {/* Audio Player */}
       {currentFile && (
         <div className="audio-player">
-          <h2>Now Previewing</h2>
+          <h2>Now Playing</h2>
+          <p style={{ marginTop: "10px", fontStyle: "italic" }}>
+            {currentFile.split("/").pop()} {/* Extract the file name */}
+          </p>
           <ReactAudioPlayer
             src={currentFile}
             controls
             autoPlay
             style={{ width: "100%" }}
           />
+          
         </div>
       )}
 
