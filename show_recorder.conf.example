@@ -1,6 +1,14 @@
-api_url = "https://libretime-vm/api"
-stream_url = "http://icecast2.server.com/mystation"
+station_name = "99.3FM WBTV-LP"
+api_url = "http://libretime-vm:8080/api"
+stream_url = "http://icecast-server.com"
 output_dir = "/home/scott/recordings"
 output_file_format = "mp3"
-recording_temp_dir = "/home/scott/ShowRecorder/recording_temp"
+output_bitrate = "128"
+recording_temp_dir = "/home/scott/recording_temp"
 blocklist_show_names = ["ROTATION"]
+log_level = "DEBUG"
+home_dir = "/home/scott/ShowRecorder"
+runasuser= "scott"
+runasgroup= "scott"
+# delete_orphaned_files="true"
+
