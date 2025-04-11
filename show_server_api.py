@@ -52,7 +52,7 @@ def is_blocked(filename):
 
 
 # This is just a dead simple list of the files in the output directory
-@app.route("/list_files", methods=["GET"])
+@app.route("/api/list_files", methods=["GET"])
 def list_files():
     """List all audio files in the output directory, excluding blocklisted files."""
     try:
@@ -72,7 +72,7 @@ def list_files():
 
 # This is the main endpoint for the show server, it is fully featured 
 # besides the filename, it parses and gives the show name, start time, end time, and chunk number
-@app.route("/list_shows", methods=["GET"])
+@app.route("/api/list_shows", methods=["GET"])
 def list_shows():
     """List all shows files in the output directory, excluding blocklisted files.
     This provides useful parsed information into the response, derived from the filename 
@@ -145,7 +145,7 @@ def list_shows():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/files/<filename>", methods=["GET"])
+@app.route("/api/files/<filename>", methods=["GET"])
 def download_file(filename):
     """Serve an audio file for download."""
     try:
