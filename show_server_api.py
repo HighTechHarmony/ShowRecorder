@@ -2,6 +2,7 @@ import os
 import re
 from flask import Flask, jsonify, send_from_directory, abort, request
 from types import SimpleNamespace
+from datetime import datetime
 
 # Read configuration
 config_path = "show_recorder.conf"
@@ -107,8 +108,7 @@ def list_shows():
             start_date = start_datetime.split("_")[0]
             
             # start time is everything to the right of the first space
-            start_time = start_datetime.split("_")[1]
-            #replace hyphens with colons
+            start_time = start_datetime.split("_")[1]            
             start_time = start_time.replace("-", ":")
 
             # end date_end_time is everything between the second [ and the second ]
@@ -117,6 +117,22 @@ def list_shows():
             end_date = end_datetime.split("_")[0]
             # end time is everything to the right of the first space
             end_time = end_datetime.split("_")[1]
+            end_time = end_time.replace("-", ":")
+
+            # Convert start_date and start_time to a timestamp
+            try:
+                start_datetime_str = f"{start_date} {start_time}"                
+                start_timestamp = int(datetime.strptime(start_datetime_str, "%Y-%m-%d %H:%M:%S").timestamp())
+            except ValueError:
+                start_timestamp = None  # Handle invalid date/time formats gracefully
+
+            # Convert end_date and end_time to a timestamp
+            try:
+                end_datetime_str = f"{end_date} {end_time}"                
+                end_timestamp = int(datetime.strptime(end_datetime_str, "%Y-%m-%d %H:%M:%S").timestamp())
+            except ValueError:
+                end_timestamp = None  # Handle invalid date/time formats gracefully
+
             # chunk number is a number to the right of the last ']' and left of the last '.' before the extension
             chunk_number = file.split("]")[-1].split(".")[0]
             # If there is no chunk number, it is not a chunked file, chunk_number will be 1
@@ -125,14 +141,15 @@ def list_shows():
             else:
                 chunk_number = int(chunk_number)
 
-
             show = {
                 "filename": file,
                 "name": show_name,
                 "start_time": start_time,
                 "start_date": start_date,
+                "start_timestamp": start_timestamp,  # Add start timestamp
                 "end_time": end_time,
                 "end_date": end_date,
+                "end_timestamp": end_timestamp,  # Add end timestamp
                 "size": file_size,
                 "chunk_number": chunk_number
             }

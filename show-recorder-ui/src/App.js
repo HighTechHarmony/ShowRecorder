@@ -28,6 +28,13 @@ function App() {
     fetchFiles();
   }, []);
 
+  // Utility function to format file size
+  const formatFileSize = (sizeInBytes) => {
+    const sizeInMB = sizeInBytes / (1024 * 1024); // Convert bytes to MB
+    return `${sizeInMB.toFixed(1)} MB`; // Format to 1 decimal place
+  };
+
+
   // Define table columns
   const columns = React.useMemo(
     () => [
@@ -68,6 +75,7 @@ function App() {
         getCellProps: () => ({
           style: { whiteSpace: "nowrap", width: "150px" },
         }),
+        sortType: (rowA, rowB) => rowA.original.start_timestamp - rowB.original.start_timestamp, // Sort by start_timestamp
       },
       {
         id: "start_time", // Unique ID for the column
@@ -80,6 +88,7 @@ function App() {
         getCellProps: () => ({
           style: { whiteSpace: "nowrap", width: "100px" },
         }),
+        sortType: (rowA, rowB) => rowA.original.start_timestamp - rowB.original.start_timestamp, // Sort by start_timestamp
       },
       {
         id: "end_date", // Unique ID for the column
@@ -92,6 +101,7 @@ function App() {
         getCellProps: () => ({
           style: { whiteSpace: "nowrap", width: "150px" },
         }),
+        sortType: (rowA, rowB) => rowA.original.end_timestamp - rowB.original.end_timestamp, // Sort by end_timestamp
       },
       {
         id: "end_time", // Unique ID for the column
@@ -104,6 +114,7 @@ function App() {
         getCellProps: () => ({
           style: { whiteSpace: "nowrap", width: "100px" },
         }),
+        sortType: (rowA, rowB) => rowA.original.end_timestamp - rowB.original.end_timestamp, // Sort by end_timestamp
       },
       {
         id: "filename", // Unique ID for the column
@@ -111,9 +122,22 @@ function App() {
         accessor: "filename",
       },
       {
+        id: "start_timestamp", // Hidden column for sorting
+        Header: "Start Time Stamp",
+        accessor: "start_timestamp",
+        show: false, // Hide this column from the table
+      },
+      {
+        id: "end_timestamp", // Hidden column for sorting
+        Header: "End Time Stamp",
+        accessor: "end_timestamp",
+        show: false, // Hide this column from the table
+      },
+      {
         id: "size", // Unique ID for the column
         Header: "Size",
         accessor: "size",
+        Cell: ({ value }) => <span>{formatFileSize(value)}</span>, // Format size as human-readable
       },
       {
         id: "chunk_number", // Unique ID for the column
@@ -153,8 +177,10 @@ function App() {
         name: file.name,
         start_date: file.start_date,
         start_time: file.start_time,
+        start_timestamp: file.start_timestamp,
         end_date: file.end_date,
         end_time: file.end_time,
+        end_timestamp: file.end_timestamp,
         filename: file.filename,
         size: file.size,
         chunk_number: file.chunk_number,
@@ -179,7 +205,15 @@ function App() {
     previousPage,
     setGlobalFilter, // For search
     state: { pageIndex, globalFilter },
-  } = useTable({ columns, data, initialState: { pageIndex: 0 } }, useGlobalFilter, useSortBy, usePagination);
+  } = useTable(
+    { 
+      columns, 
+      data, 
+      initialState: { 
+        pageIndex: 0,
+        hiddenColumns: ["start_timestamp", "end_timestamp"],
+      } 
+    }, useGlobalFilter, useSortBy, usePagination);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
