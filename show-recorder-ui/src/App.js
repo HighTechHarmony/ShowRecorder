@@ -186,98 +186,105 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Recorded Shows</h1>
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: "red" }}>API error: {error}</p>}
+      {!loading && !error && (
+        <div>
+          
+        <h1>Recorded Shows</h1>
 
-      {/* Search/Filter Input */}
-      <input
-        value={globalFilter || ""}
-        onChange={(e) => setGlobalFilter(e.target.value || undefined)} // Set undefined to reset the filter
-        placeholder="Filter for..."
-        style={{
-          marginBottom: "10px",
-          padding: "8px",
-          width: "100%",
-          maxWidth: "400px",
-        }}
-      />
+        {/* Search/Filter Input */}
+        <input
+          value={globalFilter || ""}
+          onChange={(e) => setGlobalFilter(e.target.value || undefined)} // Set undefined to reset the filter
+          placeholder="Filter for..."
+          style={{
+            marginBottom: "10px",
+            padding: "8px",
+            width: "100%",
+            maxWidth: "400px",
+          }}
+        />
 
-      <table {...getTableProps()} className="file-table">
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                  {column.render("Header")}
-                  <span>
-                    {column.isSorted
-                      ? column.isSortedDesc
-                        ? " 🔽"
-                        : " 🔼"
-                      : ""}
-                  </span>
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map((row) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <td
-                    {...cell.getCellProps({
-                      className: `cell-${cell.column.id}`, // Add a class based on the column ID
-                    })}
-                  >
-                    {cell.render("Cell")}
-                  </td>
+        <table {...getTableProps()} className="file-table">
+          <thead>
+            {headerGroups.map((headerGroup) => (
+              <tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column) => (
+                  <th {...column.getHeaderProps(column.getSortByToggleProps())}>
+                    {column.render("Header")}
+                    <span>
+                      {column.isSorted
+                        ? column.isSortedDesc
+                          ? " 🔽"
+                          : " 🔼"
+                        : ""}
+                    </span>
+                  </th>
                 ))}
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+            {page.map((row) => {
+              prepareRow(row);
+              return (
+                <tr {...row.getRowProps()}>
+                  {row.cells.map((cell) => (
+                    <td
+                      {...cell.getCellProps({
+                        className: `cell-${cell.column.id}`, // Add a class based on the column ID
+                      })}
+                    >
+                      {cell.render("Cell")}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
 
-      {/* Audio Player */}
-      {currentFile && (
-        <div className="audio-player">
-          <h2>Now Playing</h2>
-          <p style={{ marginTop: "10px", fontStyle: "italic" }}>
-            {currentFile.split("/").pop()} {/* Extract the file name */}
-          </p>
-          <ReactAudioPlayer
-            src={currentFile}
-            controls
-            autoPlay
-            style={{ width: "100%" }}
-          />
-          
+        {/* Audio Player */}
+        {currentFile && (
+          <div className="audio-player">
+            <h2>Now Playing</h2>
+            <p style={{ marginTop: "10px", fontStyle: "italic" }}>
+              {currentFile.split("/").pop()} {/* Extract the file name */}
+            </p>
+            <ReactAudioPlayer
+              src={currentFile}
+              controls
+              autoPlay
+              style={{ width: "100%" }}
+            />
+            
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        <div className="pagination">
+          <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+            {"<<"}
+          </button>
+          <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+            {"<"}
+          </button>
+          <span>
+            Page{" "}
+            <strong>
+              {pageIndex + 1} of {pageOptions.length}
+            </strong>{" "}
+          </span>
+          <button onClick={() => nextPage()} disabled={!canNextPage}>
+            {">"}
+          </button>
+          <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+            {">>"}
+          </button>
         </div>
-      )}
-
-      {/* Pagination Controls */}
-      <div className="pagination">
-        <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-          {"<<"}
-        </button>
-        <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-          {"<"}
-        </button>
-        <span>
-          Page{" "}
-          <strong>
-            {pageIndex + 1} of {pageOptions.length}
-          </strong>{" "}
-        </span>
-        <button onClick={() => nextPage()} disabled={!canNextPage}>
-          {">"}
-        </button>
-        <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-          {">>"}
-        </button>
       </div>
+      )}
     </div>
   );
 }
