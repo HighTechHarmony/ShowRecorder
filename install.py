@@ -1,6 +1,7 @@
 # Create a systemd service for the show recorder application
 import subprocess
 from types import SimpleNamespace
+import os
 
 # Change this to the path of your config file
 # Currently it is set to the same directory as this script
@@ -24,7 +25,7 @@ def read_config():
     
 
 def create_showrecorder_service_file():
-    print(f"Creating service file for {config.runasuser} and {config.runasgroup}")
+    print(f"Creating show_recorder service file for {config.runasuser} and {config.runasgroup}")
     service_content = f"""[Unit]
 Description=Show Recorder Service
 After=network.target
@@ -48,7 +49,7 @@ WantedBy=multi-user.target
         
 
 def create_api_service_file():
-    print(f"Creating service file for {config.runasuser} and {config.runasgroup}")
+    print(f"Creating show_recorder_api service file for {config.runasuser} and {config.runasgroup}")
     service_content = f"""[Unit]
 Description=Show Recorder API Service
 After=network.target
@@ -78,7 +79,69 @@ def main():
         print("This script must be run as root.")
         return
 
-    service_file_path = "/etc/systemd/system/"
+    service_file_path = "/etc/systemd/system"
+    logrotate_file_path = "/etc/logrotate.d"
+
+    print ("Do you want to install the logrotate configuration? (y/n)")
+    answer = input().strip().lower()
+    if answer == "y" or answer == "yes":
+        print ("Enter your logrotate directory (default is /etc/logrotate.d):")
+        logrotate_dir = input().strip()
+        if not logrotate_dir:
+            logrotate_dir = "/etc/logrotate.d"
+        # Verify the directory exists
+        if not os.path.exists(logrotate_dir):
+            print(f"Logrotate directory '{logrotate_dir}' does not exist.")
+            return
+        # Create logrotate configuration
+        logrotate_content = f"""{config.home_dir}/show_recorder.log {{
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 0640 {config.runasuser} {config.runasgroup}
+    sharedscripts
+    postrotate
+        systemctl reload show_recorder.service > /dev/null 2>&1 || true
+    endscript
+}}
+"""
+        # Write this out
+        with open(f"{logrotate_file_path}/show_recorder", "w") as f:
+            f.write(logrotate_content)
+        print(f"Logrotate configuration created at {logrotate_file_path}/show_recorder\n\n")
+    else:
+        print("Skipping logrotate configuration.")
+
+    print ("Do you want to try to build and install the Web UI? (y/n)")
+    answer = input().strip().lower()
+    if answer == "y" or answer == "yes":
+        # Build the web UI
+        print("Building web UI...")
+        
+        subprocess.run(["npm", "install"], cwd="show-recorder-ui", check=True)
+        subprocess.run(["npm", "run", "show-recorder-ut/build"], cwd="show-recorder-ui", check=True)
+        print("Web UI built successfully.\n\n")
+        print("Enter your web UI directory (default is /var/www/html):")
+        web_ui_dir = input().strip()
+        if not web_ui_dir:
+            web_ui_dir = "/var/www/html"
+        print(f"Copying web UI to {web_ui_dir}")
+        subprocess.run(["sudo", "cp", "-r", "build", web_ui_dir], check=True)
+        print(f"Web UI copied to {web_ui_dir}\n\n")
+    else:
+        print("Skipping web UI build.\n\n")
+
+
+
+    
+    print("Do you want to install and run the services? (y/n)")
+    answer = input().strip().lower()
+    if answer != "y" and answer != "yes":
+        print("Exiting without installing services.")
+        return
 
     # Copy the service file to the systemd directory
     print(f"Copying service file to {service_file_path}")
