@@ -8,6 +8,7 @@ import requests
 import subprocess
 import os
 import signal  # Add signal module for handling termination signals
+import html
 from types import SimpleNamespace
 
 # Here is an example of the JSON data returned from live-info:
@@ -143,6 +144,9 @@ def start_recording():
     file_name =  f"{show_name}_- [{start_time}]_- [{end_time}].{output_format}"
     # Replace any really bad characters from the file name
     file_name = file_name.replace(":", "-").replace("/", "-").replace("\\", "-").replace(" ", "_")
+    # Unescape HTML entities with their unicode equivalents
+    file_name = html.unescape(file_name)
+
     # Remove any leading or trailing spaces
     file_name = file_name.strip()    
 
