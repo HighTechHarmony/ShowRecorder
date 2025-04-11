@@ -299,29 +299,42 @@ def main():
     while True:
         logging.info("Starting loop.")
 
-        ### Update the live info from the API
-        logging.debug("Attempting to fetch live info...")
-        data = fetch_live_info()
-        if data:
-            live_info.update(data)
-            logging.debug("Live info updated successfully.")
-            current_show_api = live_info.get_data().get('currentShow', [{}])[0]
-            logging.debug("Current show: %s", current_show_api.get('name', 'N/A'))
-            logging.debug("Start time: %s", current_show_api.get('starts', 'N/A'))
-            logging.debug("End time: %s", current_show_api.get('ends', 'N/A')) 
+        ### Retry loop for fetching live info and processing currentShow
+        retry_count = 0
+        max_retries = 58 # When something goes wrong, retry for 58 seconds (1 minute) to get valid data
+        while retry_count < max_retries:
+            logging.debug("Attempting to fetch live info (Retry %d/%d)...", retry_count + 1, max_retries)
+            data = fetch_live_info()
+            if data:
+                live_info.update(data)
+                logging.debug("Live info updated successfully.")
 
-            # Compare the current show with the currently recording show
-            # If they are different, or if there is no currently recording show, we need to handle the show change
-            if currently_recording_show is None or current_show_api.get('name') != currently_recording_show.get('name'):
-                logging.debug("Show change detected.")
-                try_to_change_to(current_show_api)
+                # Check for valid currentShow
+                current_show_list = live_info.get_data().get('currentShow', [])
+                if current_show_list:
+                    current_show_api = current_show_list[0]
+                    logging.debug("Current show: %s", current_show_api.get('name', 'N/A'))
+                    logging.debug("Start time: %s", current_show_api.get('starts', 'N/A'))
+                    logging.debug("End time: %s", current_show_api.get('ends', 'N/A'))
+                    break  # Exit the retry loop once valid data is fetched and processed
+                else:
+                    logging.warning("currentShow is invalid or missing. Retrying in 1 second...")
             else:
-                logging.debug("No show change detected.")
-                
-                    
-        else:
-            logging.info("Failed to fetch live info. Retrying in next loop...")
+                logging.warning("Failed to fetch live info. Retrying in 1 second...")
 
+            retry_count += 1
+            time.sleep(1)  # Wait for 1 second before retrying
+
+        if retry_count >= max_retries:
+            logging.error("Max retries reached (%d). Continuing to the main loop...", max_retries)
+
+        # Compare the current show with the currently recording show
+        # If they are different, or if there is no currently recording show, we need to handle the show change
+        if currently_recording_show is None or current_show_api.get('name') != currently_recording_show.get('name'):
+            logging.debug("Show change detected.")
+            try_to_change_to(current_show_api)
+        else:
+            logging.debug("No show change detected.")
 
         ### Check for any orphaned recordings in the temp directory        
         temp_files = os.listdir(config.recording_temp_dir)
