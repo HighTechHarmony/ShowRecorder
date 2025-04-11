@@ -1,5 +1,6 @@
 import os
 import re
+import html
 from flask import Flask, jsonify, send_from_directory, abort, request
 from types import SimpleNamespace
 
@@ -50,6 +51,11 @@ def is_blocked(filename):
     # return blocklist_regex and blocklist_regex.search(filename)
     return False  # Temporarily disable blocklist check, for testing purposes
 
+def rewrite_filename(filename):
+    """
+    Rewrites a filename by replacing HTML entities with their correct characters.
+    """
+    return html.unescape(filename)
 
 # This is just a dead simple list of the files in the output directory
 @app.route("/api/list_files", methods=["GET"])
@@ -93,6 +99,9 @@ def list_shows():
         # Parse the show names from the filenames
         shows = []
         for file,file_size in files:
+            # Rewrite the filename to handle HTML entities
+            file = rewrite_filename(file)
+
             # File format is: show_name_-_[start_time]_[end_time]_-_[chunk_number].mp3
             # If there is no chunk number, it is not a chunked file, chunk_number will be 1
 
