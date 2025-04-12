@@ -124,6 +124,8 @@ def main():
         subprocess.run(["npm", "install"], cwd="show-recorder-ui", check=True)
         subprocess.run(["npm", "run", "show-recorder-ut/build"], cwd="show-recorder-ui", check=True)
         print("Web UI built successfully.\n\n")
+        print("Fixing permissions...")
+        subprocess.run(["sudo", "chown", "-R", f"{config.runasuser}:{config.runasgroup}", "build"], check=True)
         print("Enter your web UI directory (default is /var/www/html):")
         web_ui_dir = input().strip()
         if not web_ui_dir:

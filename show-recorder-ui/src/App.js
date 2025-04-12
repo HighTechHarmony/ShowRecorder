@@ -39,14 +39,15 @@ function App() {
   const columns = React.useMemo(
     () => [
       {
-        id: "preview", // Unique ID for the column
+        id: "preview",
         Header: "Preview",
         accessor: "preview",
+        disableSortBy: true,
         Cell: ({ row }) => {
           const fileName = row.original.filename;
           return (
             <button
-              onClick={() => setCurrentFile(`/api/files/${fileName}`)} // Set the current file to play
+              onClick={() => setCurrentFile(`/api/files/${fileName}`)}
               title="Preview"
               style={{
                 background: "none",
@@ -58,6 +59,12 @@ function App() {
             </button>
           );
         },
+        getHeaderProps: () => ({
+          style: { width: "100px", textAlign: "center" },
+        }),
+        getCellProps: () => ({
+          style: { width: "100px", textAlign: "center" },
+        }),
       },
       {
         id: "name", // Unique ID for the column
@@ -65,89 +72,82 @@ function App() {
         accessor: "name",
       },
       {
-        id: "start_date", // Unique ID for the column
+        id: "start_date",
         Header: "Start Date",
         accessor: "start_date",
-        Cell: ({ value }) => <span>{value}</span>,
+        sortType: (rowA, rowB) => rowA.original.start_timestamp - rowB.original.start_timestamp,
         getHeaderProps: () => ({
-          style: { whiteSpace: "nowrap", width: "150px" },
+          style: { width: "150px", textAlign: "center" },
         }),
         getCellProps: () => ({
-          style: { whiteSpace: "nowrap", width: "150px" },
+          style: { width: "150px", textAlign: "center" },
         }),
-        sortType: (rowA, rowB) => rowA.original.start_timestamp - rowB.original.start_timestamp, // Sort by start_timestamp
       },
       {
-        id: "start_time", // Unique ID for the column
+        id: "start_time",
         Header: "Start Time",
         accessor: "start_time",
-        Cell: ({ value }) => <span>{value}</span>,
+        sortType: (rowA, rowB) => rowA.original.start_timestamp - rowB.original.start_timestamp,
         getHeaderProps: () => ({
-          style: { whiteSpace: "nowrap", width: "100px" },
+          style: { width: "100px", textAlign: "center" },
         }),
         getCellProps: () => ({
-          style: { whiteSpace: "nowrap", width: "100px" },
+          style: { width: "100px", textAlign: "center" },
         }),
-        sortType: (rowA, rowB) => rowA.original.start_timestamp - rowB.original.start_timestamp, // Sort by start_timestamp
       },
       {
-        id: "end_date", // Unique ID for the column
+        id: "end_date",
         Header: "End Date",
         accessor: "end_date",
-        Cell: ({ value }) => <span>{value}</span>,
+        sortType: (rowA, rowB) => rowA.original.end_timestamp - rowB.original.end_timestamp,
         getHeaderProps: () => ({
-          style: { whiteSpace: "nowrap", width: "150px" },
+          style: { width: "150px", textAlign: "center" },
         }),
         getCellProps: () => ({
-          style: { whiteSpace: "nowrap", width: "150px" },
+          style: { width: "150px", textAlign: "center" },
         }),
-        sortType: (rowA, rowB) => rowA.original.end_timestamp - rowB.original.end_timestamp, // Sort by end_timestamp
       },
       {
-        id: "end_time", // Unique ID for the column
+        id: "end_time",
         Header: "End Time",
         accessor: "end_time",
-        Cell: ({ value }) => <span>{value}</span>,
+        sortType: (rowA, rowB) => rowA.original.end_timestamp - rowB.original.end_timestamp,
         getHeaderProps: () => ({
-          style: { whiteSpace: "nowrap", width: "100px" },
+          style: { width: "100px", textAlign: "center" },
         }),
         getCellProps: () => ({
-          style: { whiteSpace: "nowrap", width: "100px" },
+          style: { width: "100px", textAlign: "center" },
         }),
-        sortType: (rowA, rowB) => rowA.original.end_timestamp - rowB.original.end_timestamp, // Sort by end_timestamp
       },
       {
-        id: "filename", // Unique ID for the column
-        Header: "File Name",
-        accessor: "filename",
-      },
-      {
-        id: "start_timestamp", // Hidden column for sorting
-        Header: "Start Time Stamp",
-        accessor: "start_timestamp",
-        show: false, // Hide this column from the table
-      },
-      {
-        id: "end_timestamp", // Hidden column for sorting
-        Header: "End Time Stamp",
-        accessor: "end_timestamp",
-        show: false, // Hide this column from the table
-      },
-      {
-        id: "size", // Unique ID for the column
+        id: "size",
         Header: "Size",
         accessor: "size",
-        Cell: ({ value }) => <span>{formatFileSize(value)}</span>, // Format size as human-readable
+        Cell: ({ value }) => <span>{formatFileSize(value)}</span>,
+        getHeaderProps: () => ({
+          style: { width: "120px", textAlign: "center" },
+        }),
+        getCellProps: () => ({
+          style: { width: "120px", textAlign: "center" },
+        }),
       },
       {
-        id: "chunk_number", // Unique ID for the column
+        id: "chunk_number",
         Header: "Chunk Number",
         accessor: "chunk_number",
+        disableSortBy: true,
+        getHeaderProps: () => ({
+          style: { width: "120px", textAlign: "center" },
+        }),
+        getCellProps: () => ({
+          style: { width: "120px", textAlign: "center" },
+        }),
       },
       {
-        id: "download", // Unique ID for the column
+        id: "download",
         Header: "Download",
         accessor: "download",
+        disableSortBy: true,
         Cell: ({ row }) => {
           const fileName = row.original.filename;
           return (
@@ -165,6 +165,12 @@ function App() {
             </a>
           );
         },
+        getHeaderProps: () => ({
+          style: { width: "100px", textAlign: "center" },
+        }),
+        getCellProps: () => ({
+          style: { width: "100px", textAlign: "center" },
+        }),
       },
     ],
     []
@@ -211,8 +217,14 @@ function App() {
       data, 
       initialState: { 
         pageIndex: 0,
-        hiddenColumns: ["start_timestamp", "end_timestamp"],
-      } 
+        hiddenColumns: ["start_timestamp", "end_timestamp", "filename"], // Hide these columns by default
+        sortBy: [
+          {
+            id: "start_date", // Sort by the "Start Date" column
+            desc: true, // Set the initial sort direction to descending
+          },
+        ],
+      },
     }, useGlobalFilter, useSortBy, usePagination);
 
   if (loading) return <div>Loading...</div>;
@@ -305,7 +317,7 @@ function App() {
             {"<"}
           </button>
           <span>
-            Page{" "}
+            Page {" "}
             <strong>
               {pageIndex + 1} of {pageOptions.length}
             </strong>{" "}
