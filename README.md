@@ -17,11 +17,11 @@ There are othe show recorders that work with Libretime, but this one allows you 
 
 ## Dependencies
 
-- Python3
-- Nginx (react app)
-- python3-flask (API and recording backend)
-- liquidsoap (recording backend)
-- Node JS (Web UI)
+- Liquidsoap v2.1.3 or higher (recording backend)
+- Python3 (API and recording backend)
+- Python3-flask (API)
+- Nginx (React UI)
+- Node JS 18.19.0 or higher (React UI)
 
 Tested with Node JS v18.19.0, Liquidsoap v2.1.3-2 on Debian Bookworm (12).
 
