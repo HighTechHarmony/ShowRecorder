@@ -13,6 +13,18 @@ There are othe show recorders that work with Libretime, but this one allows you 
 - installer does most things required to get a system up and running (except nginx config)
 - Very light weight
 
+## Web UI features (recent)
+
+- Disk usage indicator: a small, color-coded bar in the web UI shows used/total space for the partition where `output_dir` lives. Colors: green (<=70%), orange (71–93%), red (>=94%).
+- Search filter: quick filter with a clear (×) button to reset the filter.
+- Pagination: the table shows 15 rows per page by default.
+- Page title and favicon updated to "Show Recorder" for easier identification in browser tabs.
+
+## API additions
+
+- `GET /api/disk_usage` — returns JSON with `total`, `used`, `free` (bytes) and `percent_used` for the partition containing `output_dir`.
+
+
 ![Show Recorder Screen shot](https://smcgrath.com/hosted_images/showrecorder_screenshot.png "Show Recorder Screen shot")
 
 ## Dependencies
