@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 from flask import Flask, jsonify, send_from_directory, abort, request
 from types import SimpleNamespace
 from datetime import datetime
@@ -159,6 +160,21 @@ def list_shows():
         # Return as json
         return jsonify({"shows": shows})
     
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/disk_usage", methods=["GET"])
+def disk_usage():
+    """Return disk usage stats for the partition containing the output directory."""
+    try:
+        usage = shutil.disk_usage(config.output_dir)
+        percent_used = (usage.used / usage.total) * 100
+        return jsonify({
+            "total": usage.total,
+            "used": usage.used,
+            "free": usage.free,
+            "percent_used": round(percent_used, 1),
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

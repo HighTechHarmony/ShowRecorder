@@ -8,16 +8,21 @@ function App() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentFile, setCurrentFile] = useState(null); 
+  const [currentFile, setCurrentFile] = useState(null);
+  const [diskUsage, setDiskUsage] = useState(null);
 
-  // Fetch the file list from the API
+  // Fetch the file list and disk usage from the API
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await axios.get("/api/list_shows");
-        const data = response.data.shows;
+        const [showsResponse, diskResponse] = await Promise.all([
+          axios.get("/api/list_shows"),
+          axios.get("/api/disk_usage"),
+        ]);
+        const data = showsResponse.data.shows;
         console.log("Fetched data:", data); // Log the fetched data
         setFiles(data);
+        setDiskUsage(diskResponse.data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -217,6 +222,7 @@ function App() {
       data, 
       initialState: { 
         pageIndex: 0,
+        pageSize: 15,
         hiddenColumns: ["start_timestamp", "end_timestamp", "filename"], // Hide these columns by default
         sortBy: [
           {
@@ -239,18 +245,45 @@ function App() {
           
         <h1>Recorded Shows</h1>
 
-        {/* Search/Filter Input */}
-        <input
-          value={globalFilter || ""}
-          onChange={(e) => setGlobalFilter(e.target.value || undefined)} // Set undefined to reset the filter
-          placeholder="Filter for..."
-          style={{
-            marginBottom: "10px",
-            padding: "8px",
-            width: "100%",
-            maxWidth: "400px",
-          }}
-        />
+        <div className="search-disk-row">
+          <div className="search-input-wrapper">
+            <input
+              value={globalFilter || ""}
+              onChange={(e) => setGlobalFilter(e.target.value || undefined)}
+              placeholder="Filter for..."
+              className="search-input"
+            />
+            {globalFilter && (
+              <button
+                className="search-clear-btn"
+                onClick={() => setGlobalFilter(undefined)}
+                title="Clear filter"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+
+          {diskUsage && (() => {
+            const pct = diskUsage.percent_used;
+            const color = pct <= 70 ? "#2a9d2a" : pct <= 93 ? "orange" : "red";
+            const usedGB = (diskUsage.used / 1024 ** 3).toFixed(2);
+            const totalGB = (diskUsage.total / 1024 ** 3).toFixed(2);
+            return (
+              <div className="disk-bar-wrapper" style={{ marginBottom: 0 }}>
+                <span className="disk-bar-label">
+                  {usedGB} GB used of {totalGB} GB ({pct}% used)
+                </span>
+                <div className="disk-bar-track">
+                  <div
+                    className="disk-bar-fill"
+                    style={{ width: `${pct}%`, backgroundColor: color }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
+        </div>
 
         <table {...getTableProps()} className="file-table">
           <thead>
