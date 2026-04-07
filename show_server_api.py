@@ -192,6 +192,41 @@ def download_file(filename):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/preview/<path:filename>", methods=["GET", "HEAD"])
+def preview_file(filename):
+    """Stream an audio file for in-browser preview (not forced download).
+    Uses <path:filename> so percent-encoded characters are handled correctly.
+    Supports HEAD requests so the UI can pre-flight check existence before loading the player.
+    """
+    try:
+        if not is_audio_file(filename):
+            abort(400, description="Invalid file type.")
+        if is_blocked(filename):
+            abort(403, description="File is blocklisted.")
+        return send_from_directory(config.output_dir, filename, as_attachment=False)
+    except FileNotFoundError:
+        abort(404, description="File not found.")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# JSON error handlers — replace Flask's default HTML error pages so the UI
+# can parse and display the error message rather than seeing opaque HTML.
+@app.errorhandler(400)
+def bad_request(e):
+    return jsonify({"error": e.description}), 400
+
+@app.errorhandler(403)
+def forbidden(e):
+    return jsonify({"error": e.description}), 403
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": e.description}), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return jsonify({"error": str(e.description)}), 500
+
 if __name__ == "__main__":
     # Run the Flask app
     app.run(host="::", port=5000, debug=True)

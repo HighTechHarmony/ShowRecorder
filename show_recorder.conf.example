@@ -11,4 +11,7 @@ home_dir = "/home/scott/ShowRecorder"
 runasuser= "scott"
 runasgroup= "scott"
 # delete_orphaned_files="true"
+# How many seconds to delay acting on a show change, to compensate for stream/liquidsoap buffer lag.
+# Default is 5 seconds. Increase if recordings are consistently cut off at the end.
+stream_delay_seconds = 5
 

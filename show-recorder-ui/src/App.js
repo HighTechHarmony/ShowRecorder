@@ -10,6 +10,7 @@ function App() {
   const [error, setError] = useState(null);
   const [currentFile, setCurrentFile] = useState(null);
   const [diskUsage, setDiskUsage] = useState(null);
+  const [playerError, setPlayerError] = useState(null);
 
   // Fetch the file list and disk usage from the API
   useEffect(() => {
@@ -39,6 +40,31 @@ function App() {
     return `${sizeInMB.toFixed(1)} MB`; // Format to 1 decimal place
   };
 
+  // Pre-flight HEAD check before loading the audio player so errors are surfaced in the UI
+  // rather than silently swallowed by the browser's audio element.
+  const handlePreviewClick = async (fileName) => {
+    setPlayerError(null);
+    setCurrentFile(null);
+    const url = `/api/preview/${encodeURIComponent(fileName)}`;
+    try {
+      const res = await fetch(url, { method: "HEAD" });
+      if (!res.ok) {
+        // Try to read the JSON error body from a GET (HEAD has no body)
+        const bodyRes = await fetch(url);
+        let message = `HTTP ${res.status}`;
+        try {
+          const json = await bodyRes.json();
+          if (json.error) message = json.error;
+        } catch (_) { }
+        setPlayerError(message);
+      } else {
+        setCurrentFile(url);
+      }
+    } catch (err) {
+      setPlayerError(`Network error: ${err.message}`);
+    }
+  };
+
 
   // Define table columns
   const columns = React.useMemo(
@@ -52,7 +78,7 @@ function App() {
           const fileName = row.original.filename;
           return (
             <button
-              onClick={() => setCurrentFile(`/api/files/${fileName}`)}
+              onClick={() => handlePreviewClick(fileName)}
               title="Preview"
               style={{
                 background: "none",
@@ -157,7 +183,7 @@ function App() {
           const fileName = row.original.filename;
           return (
             <a
-              href={`/api/files/${fileName}`}
+              href={`/api/files/${encodeURIComponent(fileName)}`}
               download
               title="Download"
               style={{
@@ -217,10 +243,10 @@ function App() {
     setGlobalFilter, // For search
     state: { pageIndex, globalFilter },
   } = useTable(
-    { 
-      columns, 
-      data, 
-      initialState: { 
+    {
+      columns,
+      data,
+      initialState: {
         pageIndex: 0,
         pageSize: 15,
         hiddenColumns: ["start_timestamp", "end_timestamp", "filename"], // Hide these columns by default
@@ -242,127 +268,135 @@ function App() {
       {error && <p style={{ color: "red" }}>API error: {error}</p>}
       {!loading && !error && (
         <div>
-          
-        <h1>Recorded Shows</h1>
 
-        <div className="search-disk-row">
-          <div className="search-input-wrapper">
-            <input
-              value={globalFilter || ""}
-              onChange={(e) => setGlobalFilter(e.target.value || undefined)}
-              placeholder="Filter for..."
-              className="search-input"
-            />
-            {globalFilter && (
-              <button
-                className="search-clear-btn"
-                onClick={() => setGlobalFilter(undefined)}
-                title="Clear filter"
-              >
-                &times;
-              </button>
-            )}
+          <h1>Recorded Shows</h1>
+
+          <div className="search-disk-row">
+            <div className="search-input-wrapper">
+              <input
+                value={globalFilter || ""}
+                onChange={(e) => setGlobalFilter(e.target.value || undefined)}
+                placeholder="Filter for..."
+                className="search-input"
+              />
+              {globalFilter && (
+                <button
+                  className="search-clear-btn"
+                  onClick={() => setGlobalFilter(undefined)}
+                  title="Clear filter"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+
+            {diskUsage && (() => {
+              const pct = diskUsage.percent_used;
+              const color = pct <= 70 ? "#2a9d2a" : pct <= 93 ? "orange" : "red";
+              const usedGB = (diskUsage.used / 1024 ** 3).toFixed(2);
+              const totalGB = (diskUsage.total / 1024 ** 3).toFixed(2);
+              return (
+                <div className="disk-bar-wrapper" style={{ marginBottom: 0 }}>
+                  <span className="disk-bar-label">
+                    {usedGB} GB used of {totalGB} GB ({pct}% used)
+                  </span>
+                  <div className="disk-bar-track">
+                    <div
+                      className="disk-bar-fill"
+                      style={{ width: `${pct}%`, backgroundColor: color }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
-          {diskUsage && (() => {
-            const pct = diskUsage.percent_used;
-            const color = pct <= 70 ? "#2a9d2a" : pct <= 93 ? "orange" : "red";
-            const usedGB = (diskUsage.used / 1024 ** 3).toFixed(2);
-            const totalGB = (diskUsage.total / 1024 ** 3).toFixed(2);
-            return (
-              <div className="disk-bar-wrapper" style={{ marginBottom: 0 }}>
-                <span className="disk-bar-label">
-                  {usedGB} GB used of {totalGB} GB ({pct}% used)
-                </span>
-                <div className="disk-bar-track">
-                  <div
-                    className="disk-bar-fill"
-                    style={{ width: `${pct}%`, backgroundColor: color }}
-                  />
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-
-        <table {...getTableProps()} className="file-table">
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                    {column.render("Header")}
-                    <span>
-                      {column.isSorted
-                        ? column.isSortedDesc
-                          ? " 🔽"
-                          : " 🔼"
-                        : ""}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {page.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => (
-                    <td
-                      {...cell.getCellProps({
-                        className: `cell-${cell.column.id}`, // Add a class based on the column ID
-                      })}
-                    >
-                      {cell.render("Cell")}
-                    </td>
+          <table {...getTableProps()} className="file-table">
+            <thead>
+              {headerGroups.map((headerGroup) => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                  {headerGroup.headers.map((column) => (
+                    <th {...column.getHeaderProps(column.getSortByToggleProps())}>
+                      {column.render("Header")}
+                      <span>
+                        {column.isSorted
+                          ? column.isSortedDesc
+                            ? " 🔽"
+                            : " 🔼"
+                          : ""}
+                      </span>
+                    </th>
                   ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {page.map((row) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()}>
+                    {row.cells.map((cell) => (
+                      <td
+                        {...cell.getCellProps({
+                          className: `cell-${cell.column.id}`, // Add a class based on the column ID
+                        })}
+                      >
+                        {cell.render("Cell")}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
 
-        {/* Audio Player */}
-        {currentFile && (
-          <div className="audio-player">
-            <h2>Now Playing</h2>
-            <p style={{ marginTop: "10px", fontStyle: "italic" }}>
-              {currentFile.split("/").pop()} {/* Extract the file name */}
-            </p>
-            <ReactAudioPlayer
-              src={currentFile}
-              controls
-              autoPlay
-              style={{ width: "100%" }}
-            />
-            
+          {/* Audio Player */}
+          {(currentFile || playerError) && (
+            <div className="audio-player">
+              <h2>Now Playing</h2>
+              {playerError ? (
+                <p style={{ color: "red", marginTop: "10px" }}>
+                  &#9888; Preview error: {playerError}
+                </p>
+              ) : (
+                <>
+                  <p style={{ marginTop: "10px", fontStyle: "italic" }}>
+                    {decodeURIComponent(currentFile.split("/").pop())}
+                  </p>
+                  <ReactAudioPlayer
+                    src={currentFile}
+                    controls
+                    autoPlay
+                    style={{ width: "100%" }}
+                    onError={() => setPlayerError("Playback error — the file may be unavailable or still recording.")}
+                  />
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          <div className="pagination">
+            <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+              {"<<"}
+            </button>
+            <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+              {"<"}
+            </button>
+            <span>
+              Page {" "}
+              <strong>
+                {pageIndex + 1} of {pageOptions.length}
+              </strong>{" "}
+            </span>
+            <button onClick={() => nextPage()} disabled={!canNextPage}>
+              {">"}
+            </button>
+            <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+              {">>"}
+            </button>
           </div>
-        )}
-
-        {/* Pagination Controls */}
-        <div className="pagination">
-          <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-            {"<<"}
-          </button>
-          <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-            {"<"}
-          </button>
-          <span>
-            Page {" "}
-            <strong>
-              {pageIndex + 1} of {pageOptions.length}
-            </strong>{" "}
-          </span>
-          <button onClick={() => nextPage()} disabled={!canNextPage}>
-            {">"}
-          </button>
-          <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-            {">>"}
-          </button>
         </div>
-      </div>
       )}
     </div>
   );

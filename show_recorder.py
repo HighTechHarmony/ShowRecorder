@@ -144,6 +144,10 @@ def start_recording():
     file_name =  f"{show_name}_- [{start_time}]_- [{end_time}].{output_format}"
     # Replace any really bad characters from the file name
     file_name = file_name.replace(":", "-").replace("/", "-").replace("\\", "-").replace(" ", "_")
+    # Strip URL-special and otherwise unsafe characters that break HTTP routing or filesystems
+    # ? and # truncate URLs; & is a query separator; % causes double-encoding; * | < > are shell/filesystem-unsafe
+    for ch in "?#&%*|<>":
+        file_name = file_name.replace(ch, "")
     # Unescape HTML entities with their unicode equivalents
     file_name = html.unescape(file_name)
 
@@ -333,12 +337,28 @@ def main():
             logging.error("Max retries reached (%d). Continuing to the main loop...", max_retries)
 
         # Compare the current show with the currently recording show
-        # If they are different, or if there is no currently recording show, we need to handle the show change
-        if currently_recording_show is None or current_show_api.get('name') != currently_recording_show.get('name'):
-            logging.debug("Show change detected.")
-            try_to_change_to(current_show_api)
+        current_name = current_show_api.get('name', '<no-name>')
+        recording_name = currently_recording_show.get('name') if currently_recording_show else '<none>'
+        current_starts = current_show_api.get('starts', '<no-start>')
+        current_ends = current_show_api.get('ends', '<no-end>')
+        recording_file = currently_recording_show.get('file_name') if currently_recording_show else '<no-file>'
+
+        logging.debug("Comparing shows: api_name='%s' (starts=%s ends=%s) vs recorded_name='%s' (file=%s)",
+                      current_name, current_starts, current_ends, recording_name, recording_file)
+
+        if current_name in getattr(config, 'blocklist_show_names', []):
+            logging.debug("Current show '%s' is on the blocklist, skipping show change logic.", current_name)
+        elif currently_recording_show is None or current_name != recording_name:
+            stream_delay = int(getattr(config, 'stream_delay_seconds', 5))
+            logging.info("Show change detected: api='%s' (starts=%s ends=%s) -> recorded='%s' (file=%s). Delaying %ds for stream buffer compensation.",
+                         current_name, current_starts, current_ends, recording_name, recording_file, stream_delay)
+            try:
+                time.sleep(stream_delay)
+                try_to_change_to(current_show_api)
+            except Exception:
+                logging.exception("try_to_change_to failed for show '%s'", current_name)
         else:
-            logging.debug("No show change detected.")
+            logging.debug("No show change detected: api='%s' equals recorded='%s'", current_name, recording_name)
 
         ### Check for any orphaned recordings in the temp directory        
         temp_files = os.listdir(config.recording_temp_dir)
