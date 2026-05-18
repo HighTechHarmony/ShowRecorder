@@ -4,4 +4,5 @@ recordings/
 *.conf
 *.log
 *.service
+show_recorder*.log
 

@@ -10,6 +10,7 @@ import os
 import signal  # Add signal module for handling termination signals
 import html
 from types import SimpleNamespace
+import ast
 
 # Here is an example of the JSON data returned from live-info:
 #{"env":"production","schedulerTime":"2025-04-04 22:43:40","previous":{"starts":"2025-04-05 00:00:00.000000","ends":"2025-04-05 02:00:02.925714","type":"track","name":"Melo Grant - CulturalBunker040125","metadata":{"id":24070,"name":"","mime":"audio\/mp3","ftype":"audioclip","filepath":"imported\/16\/Melo Grant\/Cultural Bunker\/CulturalBunker040125.mp3","import_status":0,"currentlyaccessing":0,"editedby":null,"mtime":"2025-04-03 15:12:42","utime":"2025-04-03 15:12:05","lptime":"2025-04-05 00:00:02","md5":"311dc395e9d8e6b1889e6a3d2589cb97","track_title":"CulturalBunker040125","artist_name":"Melo Grant","bit_rate":320000,"sample_rate":44100,"format":null,"length":"02:00:02.925714","album_title":"Cultural Bunker","genre":"Show","comments":"","year":"2025","track_number":null,"channels":2,"url":null,"bpm":null,"rating":null,"encoded_by":null,"disc_number":null,"mood":null,"label":null,"composer":null,"encoder":null,"checksum":null,"lyrics":null,"orchestra":null,"conductor":null,"lyricist":null,"original_lyricist":null,"radio_station_name":null,"info_url":null,"artist_url":null,"audio_source_url":null,"radio_station_url":null,"buy_this_url":null,"isrc_number":null,"catalog_number":null,"original_artist":null,"copyright":null,"report_datetime":null,"report_location":null,"report_organization":null,"subject":null,"contributor":null,"language":null,"replay_gain":"-2.87","owner_id":16,"cuein":"00:00:00","cueout":"02:00:02.925714","hidden":false,"filesize":288118205,"description":"","artwork":"","track_type_id":null,"artwork_url":"https:\/\/airtime.993wbtv.org\/api\/track?id=24070&amp;return=artwork"}},"current":{"starts":"2025-04-05 02:00:00","ends":"2025-04-05 03:59:57.12645","type":"track","name":"DJ Llu - getFWDL_318_03302025","media_item_played":true,"metadata":{"id":24026,"name":"","mime":"audio\/mp3","ftype":"audioclip","filepath":"imported\/16\/getFWDL_318_03302025.mp3","import_status":0,"currentlyaccessing":0,"editedby":null,"mtime":"2025-03-31 17:23:26","utime":"2025-03-31 17:21:31","lptime":"2025-04-05 02:00:03","md5":"963036fdf6db97d189c725a4319b6d8f","track_title":"getFWDL_318_03302025","artist_name":"DJ Llu","bit_rate":160000,"sample_rate":44100,"format":null,"length":"01:59:57.12645","album_title":"Get Fresh With DJ Llu","genre":"Show","comments":"0","year":"2025","track_number":null,"channels":2,"url":null,"bpm":0,"rating":null,"encoded_by":null,"disc_number":null,"mood":"","label":"","composer":"","encoder":null,"checksum":null,"lyrics":null,"orchestra":null,"conductor":"","lyricist":null,"original_lyricist":null,"radio_station_name":null,"info_url":"","artist_url":null,"audio_source_url":null,"radio_station_url":null,"buy_this_url":null,"isrc_number":"","catalog_number":null,"original_artist":null,"copyright":"","report_datetime":null,"report_location":null,"report_organization":null,"subject":null,"contributor":null,"language":"","replay_gain":"-1.09","owner_id":16,"cuein":"00:00:00","cueout":"01:59:57.12645","hidden":false,"filesize":143944671,"description":"0","artwork":"","track_type_id":null,"artwork_url":"https:\/\/airtime.993wbtv.org\/api\/track?id=24026&amp;return=artwork"},"record":"0"},"next":{"starts":"2025-04-05 12:00:00.000000","ends":"2025-04-05 12:00:29.884082","type":"track","name":"Isabella Bufano - IsabellaBufano_GreenBubbleTea_StationIDPromo2.mp3","metadata":{"id":24056,"name":"","mime":"audio\/mp3","ftype":"audioclip","filepath":"imported\/16\/Isabella Bufano\/WBTV IDs\/IsabellaBufano_GreenBubbleTea_StationIDPromo2.mp3","import_status":0,"currentlyaccessing":0,"editedby":null,"mtime":"2025-04-01 15:34:31","utime":"2025-04-01 15:34:30","lptime":"2025-04-03 08:43:11","md5":"ddf96e970a10a62eb5d014e997987dd1","track_title":"IsabellaBufano_GreenBubbleTea_StationIDPromo2.mp3","artist_name":"Isabella Bufano","bit_rate":320000,"sample_rate":44100,"format":null,"length":"00:00:29.884082","album_title":"WBTV IDs","genre":"ID","comments":"","year":"2025","track_number":null,"channels":2,"url":null,"bpm":null,"rating":null,"encoded_by":null,"disc_number":null,"mood":null,"label":null,"composer":null,"encoder":null,"checksum":null,"lyrics":null,"orchestra":null,"conductor":null,"lyricist":null,"original_lyricist":null,"radio_station_name":null,"info_url":null,"artist_url":null,"audio_source_url":null,"radio_station_url":null,"buy_this_url":null,"isrc_number":null,"catalog_number":null,"original_artist":null,"copyright":null,"report_datetime":null,"report_location":null,"report_organization":null,"subject":null,"contributor":null,"language":null,"replay_gain":"-4.73","owner_id":16,"cuein":"00:00:00","cueout":"00:00:29.884082","hidden":false,"filesize":1200560,"description":"","artwork":"","track_type_id":null,"artwork_url":"https:\/\/airtime.993wbtv.org\/api\/track?id=24056&amp;return=artwork"}},"currentShow":[{"start_timestamp":"2025-04-04 22:00:00","end_timestamp":"2025-04-05 00:00:00","name":"Get Fresh With DJ Llu","description":"","id":6763,"instance_id":65462,"record":0,"url":"","image_path":"","starts":"2025-04-04 22:00:00","ends":"2025-04-05 00:00:00"}],"nextShow":[{"id":38416,"instance_id":68110,"name":"Bike Talk","description":"","url":"","start_timestamp":"2025-04-05 08:00:00","end_timestamp":"2025-04-05 09:00:00","starts":"2025-04-05 08:00:00","ends":"2025-04-05 09:00:00","record":0,"image_path":"","type":"show"}],"source_enabled":"Scheduled","timezone":"America\/New_York","timezoneOffset":"-14400","AIRTIME_API_VERSION":"1.1"}
@@ -100,8 +101,32 @@ def read_config():
             print(f"Reading line: {line.strip()}")
             if "=" in line:
                 key, value = line.strip().split("=", 1)
-                value = value.strip().strip('"').strip("'")
+                value = value.strip()
+                # keep the raw value for possible parsing (lists, etc.)
                 config_dict[key.strip()] = value
+    # Try to parse list-like config values (e.g., blocklist_show_names = ["ROTATION"]).
+    for k, v in list(config_dict.items()):
+        v_str = v.strip()
+        if v_str.startswith('[') and v_str.endswith(']'):
+            try:
+                parsed = ast.literal_eval(v_str)
+                # Ensure result is a list of strings
+                if isinstance(parsed, (list, tuple)):
+                    config_dict[k] = [str(x) for x in parsed]
+                else:
+                    config_dict[k] = parsed
+            except Exception:
+                # Fallback: split on commas inside the brackets
+                inner = v_str.strip('[]')
+                items = [item.strip().strip('"').strip("'") for item in inner.split(',') if item.strip()]
+                config_dict[k] = items
+        else:
+            # Strip surrounding quotes for plain values
+            if (v_str.startswith('"') and v_str.endswith('"')) or (v_str.startswith("'") and v_str.endswith("'")):
+                config_dict[k] = v_str[1:-1]
+            else:
+                config_dict[k] = v_str
+
     # Convert the dictionary to a SimpleNamespace for attribute-style access
     config = SimpleNamespace(**config_dict)
     setup_logging()  # Set up logging after reading the config
@@ -346,9 +371,10 @@ def main():
         logging.debug("Comparing shows: api_name='%s' (starts=%s ends=%s) vs recorded_name='%s' (file=%s)",
                       current_name, current_starts, current_ends, recording_name, recording_file)
 
-        if current_name in getattr(config, 'blocklist_show_names', []):
-            logging.debug("Current show '%s' is on the blocklist, skipping show change logic.", current_name)
-        elif currently_recording_show is None or current_name != recording_name:
+        # Detect show changes by name (or start condition). Let try_to_change_to
+        # handle blocklisted shows — it will stop any current recording and
+        # simply not start a new recording if the new show is blocklisted.
+        if currently_recording_show is None or current_name != recording_name:
             stream_delay = int(getattr(config, 'stream_delay_seconds', 5))
             logging.info("Show change detected: api='%s' (starts=%s ends=%s) -> recorded='%s' (file=%s). Delaying %ds for stream buffer compensation.",
                          current_name, current_starts, current_ends, recording_name, recording_file, stream_delay)
