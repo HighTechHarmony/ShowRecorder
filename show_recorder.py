@@ -244,8 +244,27 @@ def try_to_change_to(new_show):
         logging.info("Stopping recording for show: %s", currently_recording_show.get('name', 'N/A'))
         stop_recording()    
     
+    # Normalize the show name for case-insensitive checks
+    new_name = (new_show.get('name') or '').strip()
+    new_name_lower = new_name.lower()
+
+    # Build a case-insensitive blocklist check. If the show name contains '(repeate)'
+    # (not case sensitive) treat it as blocklisted. Also allow configured blocklist
+    # entries to match case-insensitively or as substrings.
+    configured_blocklist = getattr(config, 'blocklist_show_names', []) or []
+    blocklist_lower = [str(x).lower() for x in configured_blocklist]
+
+    is_blocked = False
+    if '(repeate)' in new_name_lower:
+        is_blocked = True
+    else:
+        for b in blocklist_lower:
+            if b == new_name_lower or b in new_name_lower or new_name_lower in b:
+                is_blocked = True
+                break
+
     # unless the new show is on the blocklist, do the shuffle and call start recording
-    if new_show.get('name') in getattr(config, 'blocklist_show_names', []):
+    if is_blocked:
         logging.debug("Not doing anything with this show %s, as it is on the blocklist.", new_show.get('name', 'N/A'))        
     else:
         # Shuffle

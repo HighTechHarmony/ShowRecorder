@@ -12,6 +12,11 @@ function App() {
   const [diskUsage, setDiskUsage] = useState(null);
   const [playerError, setPlayerError] = useState(null);
 
+  const closePlayer = () => {
+    setCurrentFile(null);
+    setPlayerError(null);
+  };
+
   // Fetch the file list and disk usage from the API
   useEffect(() => {
     const fetchFiles = async () => {
@@ -353,14 +358,24 @@ function App() {
           {/* Audio Player */}
           {(currentFile || playerError) && (
             <div className="audio-player">
-              <h2>Now Playing</h2>
+              <div className="audio-player-header">
+                <h2>Preview Player</h2>
+                <button
+                  className="audio-player-close"
+                  onClick={closePlayer}
+                  aria-label="Close preview player"
+                  title="Close preview player"
+                >
+                  Close
+                </button>
+              </div>
               {playerError ? (
-                <p style={{ color: "red", marginTop: "10px" }}>
+                <p className="audio-player-error">
                   &#9888; Preview error: {playerError}
                 </p>
               ) : (
                 <>
-                  <p style={{ marginTop: "10px", fontStyle: "italic" }}>
+                  <p className="audio-player-filename">
                     {decodeURIComponent(currentFile.split("/").pop())}
                   </p>
                   <ReactAudioPlayer
@@ -368,7 +383,7 @@ function App() {
                     controls
                     autoPlay
                     style={{ width: "100%" }}
-                    onError={() => setPlayerError("Playback error — the file may be unavailable or still recording.")}
+                    onError={() => setPlayerError("Playback error - the file may be unavailable or still recording.")}
                   />
                 </>
               )}
